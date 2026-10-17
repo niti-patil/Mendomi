@@ -1,0 +1,133 @@
+{
+  "name": "DoctorReport",
+  "type": "object",
+  "properties": {
+    "generated_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "days_tracked": {
+      "type": "number"
+    },
+    "included_sections": {
+      "type": "object",
+      "description": "Which sections the patient chose to include",
+      "properties": {
+        "medication": {
+          "type": "boolean"
+        },
+        "pain": {
+          "type": "boolean"
+        },
+        "sleep": {
+          "type": "boolean"
+        },
+        "activity": {
+          "type": "boolean"
+        },
+        "flags": {
+          "type": "boolean"
+        },
+        "summary": {
+          "type": "boolean"
+        }
+      }
+    },
+    "medication_adherence_pct": {
+      "type": "number"
+    },
+    "scheduled_doses": {
+      "type": "number"
+    },
+    "taken_doses": {
+      "type": "number"
+    },
+    "pain_first": {
+      "type": "number"
+    },
+    "pain_recent": {
+      "type": "number"
+    },
+    "pain_trend_label": {
+      "type": "string",
+      "description": "improving, stable, worsening"
+    },
+    "pain_series": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "pain": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "poor_sleep_count": {
+      "type": "number"
+    },
+    "nights_logged": {
+      "type": "number"
+    },
+    "avg_walk_minutes": {
+      "type": "number"
+    },
+    "walk_target": {
+      "type": "number"
+    },
+    "walk_days_met": {
+      "type": "number"
+    },
+    "fever_days": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "concern_notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ai_summary": {
+      "type": "string",
+      "description": "AI-generated descriptive summary (not diagnostic)"
+    },
+    "shared": {
+      "type": "boolean",
+      "default": false
+    },
+    "share_token": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "generated_date"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

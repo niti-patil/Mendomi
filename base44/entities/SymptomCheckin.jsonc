@@ -1,0 +1,73 @@
+{
+  "name": "SymptomCheckin",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "pain_level": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 10
+    },
+    "energy_level": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "sleep_hours": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 24
+    },
+    "temperature": {
+      "type": "number"
+    },
+    "activity_minutes": {
+      "type": "number",
+      "minimum": 0
+    },
+    "mood": {
+      "type": "string",
+      "enum": [
+        "great",
+        "good",
+        "okay",
+        "low",
+        "rough"
+      ]
+    },
+    "took_medications": {
+      "type": "boolean"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "ai_response": {
+      "type": "string"
+    },
+    "urgent_flag": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "date",
+    "pain_level"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

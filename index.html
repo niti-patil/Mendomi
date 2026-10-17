@@ -1,0 +1,50 @@
+const db = globalThis.__B44_DB__ || { auth:{ isAuthenticated: async()=>false, me: async()=>null }, entities:new Proxy({}, { get:()=>({ filter:async()=>[], get:async()=>null, create:async()=>({}), update:async()=>({}), delete:async()=>({}) }) }), integrations:{ Core:{ UploadFile:async()=>({ file_url:'' }) } } };
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="https://db.com/logo_v2.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#2c4a5e" />
+
+    <title>Mendly — Your Recovery Companion</title>
+    <meta name="description" content="Mendly helps you track medications, organize daily care, monitor symptoms, and share doctor reports — all in one calm, guided recovery companion." />
+    <meta name="application-name" content="Mendly" />
+    <meta name="apple-mobile-web-app-title" content="Mendly" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Mendly" />
+    <meta property="og:title" content="Mendly — Your Recovery Companion" />
+    <meta property="og:description" content="Track medications, organize daily care, monitor symptoms, and share doctor reports — all in one calm, guided recovery companion." />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Mendly — Your Recovery Companion" />
+    <meta name="twitter:description" content="Track medications, organize daily care, monitor symptoms, and share doctor reports." />
+
+    <!-- Content Security Policy (tightened: no wildcard origins, no unsafe-eval) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https:; media-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';" />
+
+    <!-- Permissions-Policy (defense-in-depth: restrict unused browser APIs) -->
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), gyroscope=(), magnetometer=(), usb=(), accelerometer=(), ambient-light-sensor=(), bluetooth=()" />
+
+    <!-- JSON-LD branding -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Mendly",
+      "applicationCategory": "HealthApplication",
+      "operatingSystem": "Web, iOS, Android",
+      "description": "Mendly helps you track medications, organize daily care, monitor symptoms, and share doctor reports — all in one calm, guided recovery companion."
+    }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

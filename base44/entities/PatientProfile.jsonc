@@ -1,0 +1,136 @@
+{
+  "name": "PatientProfile",
+  "type": "object",
+  "properties": {
+    "full_name": {
+      "type": "string"
+    },
+    "date_of_birth": {
+      "type": "string",
+      "format": "date"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "emergency_contact_name": {
+      "type": "string"
+    },
+    "emergency_contact_phone": {
+      "type": "string"
+    },
+    "surgery_type": {
+      "type": "string"
+    },
+    "surgery_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "diagnosis": {
+      "type": "string"
+    },
+    "surgeon": {
+      "type": "string"
+    },
+    "hospital": {
+      "type": "string"
+    },
+    "restrictions_summary": {
+      "type": "string"
+    },
+    "onboarding_complete": {
+      "type": "boolean",
+      "default": false
+    },
+    "profile_photo_url": {
+      "type": "string",
+      "description": "Uploaded profile photo"
+    },
+    "hospital_name": {
+      "type": "string"
+    },
+    "primary_doctor": {
+      "type": "string"
+    },
+    "procedure_name": {
+      "type": "string"
+    },
+    "procedure_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "insurance_provider": {
+      "type": "string"
+    },
+    "insurance_member_id": {
+      "type": "string"
+    },
+    "time_zone": {
+      "type": "string",
+      "description": "IANA timezone, e.g. America/Los_Angeles"
+    },
+    "notification_email": {
+      "type": "string",
+      "description": "Email address for recovery reminders; defaults to the account login email, editable."
+    },
+    "email_opt_in": {
+      "type": "boolean",
+      "default": true,
+      "description": "Master opt-in for account-related emails."
+    },
+    "medication_reminders": {
+      "type": "boolean",
+      "default": true
+    },
+    "daily_checkin_reminders": {
+      "type": "boolean",
+      "default": true
+    },
+    "appointment_reminders": {
+      "type": "boolean",
+      "default": true
+    },
+    "caregiver_alerts": {
+      "type": "boolean",
+      "default": false
+    },
+    "mendy_response_style": {
+      "type": "string",
+      "enum": [
+        "encouraging",
+        "direct",
+        "gentle"
+      ],
+      "default": "encouraging",
+      "description": "Tone/style for Mendy responses. Encouraging = warm cheerleading; direct = short, to the point; gentle = softer tone, more explanation."
+    },
+    "caregiver_email": {
+      "type": "string",
+      "description": "Email of a linked caregiver granted read-only dashboard access."
+    },
+    "share_notes_with_caregiver": {
+      "type": "boolean",
+      "default": false
+    },
+    "share_chat_with_caregiver": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "full_name"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

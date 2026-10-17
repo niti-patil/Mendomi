@@ -1,0 +1,81 @@
+{
+  "name": "DischargeDocument",
+  "type": "object",
+  "properties": {
+    "file_url": {
+      "type": "string"
+    },
+    "file_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "extracted",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "extracted_json": {
+      "type": "object"
+    },
+    "diagnosis": {
+      "type": "string"
+    },
+    "surgery_type": {
+      "type": "string"
+    },
+    "surgery_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "surgeon": {
+      "type": "string"
+    },
+    "hospital": {
+      "type": "string"
+    },
+    "restrictions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "activity_guidelines": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "care_instructions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "warning_signs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "file_url"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

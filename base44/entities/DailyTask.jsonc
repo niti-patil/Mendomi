@@ -1,0 +1,67 @@
+{
+  "name": "DailyTask",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "medication",
+        "activity",
+        "self_care",
+        "check_in",
+        "appointment"
+      ],
+      "default": "self_care"
+    },
+    "scheduled_time": {
+      "type": "string",
+      "description": "HH:MM 24h time or empty for any time"
+    },
+    "task_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "order": {
+      "type": "number",
+      "default": 0
+    },
+    "medication_id": {
+      "type": "string",
+      "description": "Linked medication if category is medication"
+    },
+    "recurring": {
+      "type": "boolean",
+      "default": false,
+      "description": "Generates daily"
+    }
+  },
+  "required": [
+    "title",
+    "task_date"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}
