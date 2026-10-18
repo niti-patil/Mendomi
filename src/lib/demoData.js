@@ -178,6 +178,47 @@ export const DEMO_APPOINTMENTS = [
   },
 ];
 
+// Instant canned extraction for ninja demo — skip Groq/LLM waits.
+export const DEMO_RECOVERY_PLAN = {
+  diagnosis: DEMO_DISCHARGE.diagnosis,
+  procedure: DEMO_DISCHARGE.surgery_type,
+  recovery_duration_days: 42,
+  summary: "You had a laparoscopic appendectomy for acute appendicitis. Recovery usually takes about six weeks — keep the incision clean, walk a little every day, and take your medications as prescribed. You're already on a solid path.",
+  restrictions: DEMO_DISCHARGE.restrictions,
+  follow_up_info: "Follow up with Dr. Sarah Chen at St. Mary's Medical Center for an incision check and recovery assessment.",
+  medications: DEMO_MEDICATIONS.map((m) => ({
+    name: m.name,
+    dosage: m.dosage,
+    frequency: m.frequency,
+    instructions: m.instructions,
+    purpose: m.purpose,
+    reminders: m.schedule_times,
+  })),
+  daily_tasks: [
+    { title: "Take Acetaminophen (500 mg)", category: "medication", scheduled_time: "08:00", recurring: true },
+    { title: "Take Cephalexin (500 mg)", category: "medication", scheduled_time: "08:00", recurring: true },
+    { title: "Morning walk", category: "activity", scheduled_time: "09:00", recurring: true },
+    { title: "Change incision bandage", category: "self_care", scheduled_time: "10:00", recurring: true },
+    { title: "Drink 8 glasses of water", category: "activity", scheduled_time: "", recurring: true },
+    { title: "Symptom check-in", category: "check_in", scheduled_time: "18:00", recurring: true },
+  ],
+  appointment: {
+    title: DEMO_APPOINTMENTS[0].title,
+    provider: DEMO_APPOINTMENTS[0].provider,
+    location: DEMO_APPOINTMENTS[0].location,
+    date: DEMO_APPOINTMENTS[0].date,
+    time: DEMO_APPOINTMENTS[0].time,
+    notes: DEMO_APPOINTMENTS[0].notes,
+  },
+  field_confidence: {
+    diagnosis: 1,
+    procedure: 1,
+    medications: 1,
+    restrictions: 1,
+    appointment: 1,
+  },
+};
+
 export const DEMO_CHECKINS = (() => {
   const checkins = [];
   for (let i = 6; i >= 1; i--) {
