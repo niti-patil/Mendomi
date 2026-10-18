@@ -2,7 +2,7 @@ import { useSearchParams } from "react-router-dom";
 import HubTabs from "@/components/HubTabs";
 import RecoveryPlan from "@/pages/RecoveryPlan";
 import Medications from "@/pages/Medications";
-import SymptomCheckIn from "@/pages/SymptomCheckIn";
+import SymptomCheckIn from "@/pages/SymptomCheckin";
 import Progress from "@/pages/Progress";
 import { ListChecks, Pill, HeartPulse, LineChart } from "lucide-react";
 

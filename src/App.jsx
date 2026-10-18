@@ -12,7 +12,7 @@ import Upload from '@/pages/Upload';
 import AskMendy from '@/pages/AskMendy';
 import Medications from '@/pages/Medications';
 import MedicationDetail from '@/pages/MedicationDetail';
-import SymptomCheckIn from '@/pages/SymptomCheckIn';
+import SymptomCheckIn from '@/pages/SymptomCheckin';
 import CheckInHistory from '@/pages/CheckInHistory';
 import Progress from '@/pages/Progress';
 import DoctorReport from '@/pages/DoctorReport';
