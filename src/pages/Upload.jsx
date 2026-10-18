@@ -1,12 +1,11 @@
-const db = globalThis.__B44_DB__ || { auth:{ isAuthenticated: async()=>false, me: async()=>null }, entities:new Proxy({}, { get:()=>({ filter:async()=>[], get:async()=>null, create:async()=>({}), update:async()=>({}), delete:async()=>({}) }) }), integrations:{ Core:{ UploadFile:async()=>({ file_url:'' }) } } };
+import { getDemoClient } from "@/lib/demoClient";
+const db = getDemoClient();
 
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Camera, Upload as UploadIcon, Loader2, CheckCircle2, Sparkles, AlertCircle, Link2, FileText, X, Link as LinkIcon } from "lucide-react";
 
 import { todayStr } from "@/lib/recovery";
-import DemoBlockedNotice from "@/components/DemoBlockedNotice";
-import { isDemoMode } from "@/lib/demoClient";
 
 const STEPS = { SELECT: "select", EXTRACTING: "extracting", REVIEW: "review", SAVED: "saved" };
 
@@ -170,12 +169,7 @@ export default function Upload() {
         <p className="text-sm text-muted-foreground">Add one or more files or a link. Mendy reads them together and builds your recovery plan.</p>
       </div>
 
-      {isDemoMode() ? (
-        <DemoBlockedNotice
-          title="Can't upload in demo mode"
-          message="Demo users can't test the discharge paper upload until an account is created. Create an account to upload your papers and let Mendy build a personalized recovery plan."
-        />
-      ) : step === STEPS.SELECT && (
+      {step === STEPS.SELECT && (
         <div className="space-y-5">
           <div className="grid gap-4 sm:grid-cols-2">
             <UploadCard className="md:hidden" icon={Camera} title="Take a photo" desc="Use your camera to photograph the papers" onClick={() => cameraRef.current?.click()} loading={uploading} />

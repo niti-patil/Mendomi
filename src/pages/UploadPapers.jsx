@@ -1,4 +1,5 @@
-const db = globalThis.__B44_DB__ || { auth:{ isAuthenticated: async()=>false, me: async()=>null }, entities:new Proxy({}, { get:()=>({ filter:async()=>[], get:async()=>null, create:async()=>({}), update:async()=>({}), delete:async()=>({}) }) }), integrations:{ Core:{ UploadFile:async()=>({ file_url:'' }) } } };
+import { getDemoClient } from "@/lib/demoClient";
+const db = getDemoClient();
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -20,6 +21,7 @@ export default function UploadPapers() {
       const { file_url } = await db.integrations.Core.UploadFile({ file });
       setStatus('extracting');
       const res = await db.functions.invoke('extractDischargeDocument', { file_url, file_name: file.name });
+      if (res.data?.error) throw new Error(res.data.error);
       setResult(res.data);
       setStatus('done');
     } catch (e) {

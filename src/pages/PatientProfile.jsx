@@ -1,10 +1,11 @@
-const db = globalThis.__B44_DB__ || { auth:{ isAuthenticated: async()=>false, me: async()=>null }, entities:new Proxy({}, { get:()=>({ filter:async()=>[], get:async()=>null, create:async()=>({}), update:async()=>({}), delete:async()=>({}) }) }), integrations:{ Core:{ UploadFile:async()=>({ file_url:'' }) } } };
+import { getDemoClient } from "@/lib/demoClient";
+const db = getDemoClient();
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   User, Camera, Hospital, Stethoscope, FileText, Syringe, Pill, Shield,
-  Bell, Globe, LogOut, ChevronDown, Plus, Trash2, Loader2, Check, Mail,
+  Bell, Globe, ChevronDown, Plus, Trash2, Loader2, Check, Mail,
   MessageSquareText, Users, CalendarDays, ChevronRight, ShieldCheck, Upload as UploadIcon
 } from "lucide-react";
 
@@ -54,8 +55,6 @@ export default function PatientProfile() {
     try { const { file_url } = await db.integrations.Core.UploadFile({ file }); await patch({ profile_photo_url: file_url }); }
     finally { setPhotoUploading(false); }
   };
-  const signOut = async () => { await db.auth.logout(); };
-
   const toggle = (k) => setOpen((o) => ({ ...o, [k]: !o[k] }));
 
   const surgeryDate = profile?.procedure_date || profile?.surgery_date;
@@ -116,7 +115,7 @@ export default function PatientProfile() {
       </Collapsible>
 
       <Collapsible icon={Bell} title="Settings" subtitle="Reminders, caregiver, timezone, Mendy" open={open.settings} onToggle={() => toggle("settings")}>
-        <SettingsSection profile={profile} patch={patch} onSignOut={signOut} />
+        <SettingsSection profile={profile} patch={patch} />
       </Collapsible>
 
       {saving && <p className="mt-3 text-center text-xs text-muted-foreground">Saving…</p>}
@@ -141,7 +140,7 @@ function Field({ label, children }) {
   return <div><label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</label>{children}</div>;
 }
 
-function SettingsSection({ profile, patch, onSignOut }) {
+function SettingsSection({ profile, patch }) {
   return (
     <div className="space-y-5">
       <div>
@@ -192,9 +191,6 @@ function SettingsSection({ profile, patch, onSignOut }) {
         </div>
       </div>
 
-      <button onClick={onSignOut} className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted">
-        <LogOut className="h-4 w-4" /> Sign out
-      </button>
     </div>
   );
 }

@@ -1,12 +1,12 @@
-const db = globalThis.__B44_DB__ || { auth:{ isAuthenticated: async()=>false, me: async()=>null }, entities:new Proxy({}, { get:()=>({ filter:async()=>[], get:async()=>null, create:async()=>({}), update:async()=>({}), delete:async()=>({}) }) }), integrations:{ Core:{ UploadFile:async()=>({ file_url:'' }) } } };
+import { getDemoClient } from "@/lib/demoClient";
+const db = getDemoClient();
 
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Send, Loader2, BookmarkPlus, BookmarkCheck, FilePlus, Lock } from "lucide-react";
+import { Send, Loader2, BookmarkPlus, BookmarkCheck, FilePlus } from "lucide-react";
 
 import MendyAvatar from "@/components/MendyAvatar";
 import UrgentBanner from "@/components/UrgentBanner";
-import { isDemoMode } from "@/lib/demoClient";
 
 export default function AskMendy() {
   const [messages, setMessages] = useState([]);
@@ -46,7 +46,6 @@ export default function AskMendy() {
   };
 
   const ask = async (text) => {
-    if (isDemoMode()) return;
     const q = (text ?? input).trim();
     if (!q || sending) return;
     const next = [...messages, { role: "user", content: q }];
@@ -59,7 +58,12 @@ export default function AskMendy() {
       if (data?.error) throw new Error(data.error);
       setMessages([...next, { role: "mendy", content: data.answer, urgent: data.urgent_flag, urgentReason: data.urgent_reason }]);
     } catch (e) {
-      setMessages([...next, { role: "mendy", content: "I had trouble answering that. Please try again in a moment.", error: true }]);
+      const missingKey = e?.message?.includes("GROQ_API_KEY");
+      setMessages([...next, {
+        role: "mendy",
+        content: missingKey ? e.message : "I had trouble answering that. Please try again in a moment.",
+        error: true,
+      }]);
     } finally {
       setSending(false);
     }
@@ -122,18 +126,10 @@ export default function AskMendy() {
         </div>
 
         <div className="border-t border-border/70 p-3">
-          {isDemoMode() ? (
-            <div className="flex items-center justify-center gap-2 rounded-full bg-amber-50 px-4 py-3 text-sm text-amber-800 ring-1 ring-amber-200">
-              <Lock className="h-4 w-4 shrink-0" />
-              <span>Mendy can't answer new questions in demo mode —</span>
-              <Link to="/auth" className="font-semibold underline">create an account</Link>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder="Ask Mendy about your recovery…" className="flex-1 rounded-full border border-input bg-background px-4 py-2.5 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
-              <button onClick={() => ask()} disabled={sending || !input.trim()} className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"><Send className="h-4 w-4" /></button>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder="Ask Mendy about your recovery…" className="flex-1 rounded-full border border-input bg-background px-4 py-2.5 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
+            <button onClick={() => ask()} disabled={sending || !input.trim()} className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"><Send className="h-4 w-4" /></button>
+          </div>
         </div>
       </div>
     </div>

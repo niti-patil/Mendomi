@@ -1,4 +1,5 @@
-const db = globalThis.__B44_DB__ || { auth:{ isAuthenticated: async()=>false, me: async()=>null }, entities:new Proxy({}, { get:()=>({ filter:async()=>[], get:async()=>null, create:async()=>({}), update:async()=>({}), delete:async()=>({}) }) }), integrations:{ Core:{ UploadFile:async()=>({ file_url:'' }) } } };
+import { getDemoClient } from "@/lib/demoClient";
+const db = getDemoClient();
 
 import React, { useEffect, useState } from "react";
 import { CalendarClock, Check, Pill, FileText, ListChecks, MapPin, Clock } from "lucide-react";

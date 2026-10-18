@@ -1,4 +1,5 @@
-const db = globalThis.__B44_DB__ || { auth:{ isAuthenticated: async()=>false, me: async()=>null }, entities:new Proxy({}, { get:()=>({ filter:async()=>[], get:async()=>null, create:async()=>({}), update:async()=>({}), delete:async()=>({}) }) }), integrations:{ Core:{ UploadFile:async()=>({ file_url:'' }) } } };
+import { getDemoClient } from "@/lib/demoClient";
+const db = getDemoClient();
 
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -28,6 +29,7 @@ export default function SymptomCheckin() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
 
   const { data: history = [] } = useQuery({
     queryKey: ['checkins'],
@@ -36,10 +38,17 @@ export default function SymptomCheckin() {
 
   const submit = async () => {
     setSubmitting(true);
+    setError('');
     try {
       const res = await db.functions.invoke('wellnessCoach', { ...form, date: today });
+      if (res.data?.error) {
+        setError(res.data.error);
+        return;
+      }
       setResult(res.data);
       qc.invalidateQueries(['checkins']);
+    } catch (e) {
+      setError(e.message || 'Could not send this check-in.');
     } finally {
       setSubmitting(false);
     }
@@ -137,6 +146,7 @@ export default function SymptomCheckin() {
             <Textarea rows={2} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} placeholder="How was your day?" />
           </div>
 
+          {error && <p className="text-sm text-destructive">{error}</p>}
           <Button onClick={submit} disabled={submitting} className="w-full h-12 rounded-xl text-base">
             {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send to Aria'}
           </Button>

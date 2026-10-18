@@ -1,12 +1,13 @@
-const db = globalThis.__B44_DB__ || { auth:{ isAuthenticated: async()=>false, me: async()=>null }, entities:new Proxy({}, { get:()=>({ filter:async()=>[], get:async()=>null, create:async()=>({}), update:async()=>({}), delete:async()=>({}) }) }), integrations:{ Core:{ UploadFile:async()=>({ file_url:'' }) } } };
+import { getDemoClient } from "@/lib/demoClient";
+const db = getDemoClient();
 
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import {
   House, ListChecks, MessageCircleHeart, CalendarDays, Stethoscope,
-  Plus, PanelLeftClose, PanelLeftOpen, LogOut
+  Plus, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 import SettingsDropdown from '@/components/SettingsDropdown';
 import Logo from '@/components/Logo';
@@ -22,18 +23,12 @@ const nav = [
 export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const qc = useQueryClient();
   const [collapsed, setCollapsed] = useState(false);
 
   const { data: profile } = useQuery({
     queryKey: ['me-profile'],
     queryFn: async () => (await db.entities.PatientProfile.list())[0] || null
   });
-
-  const handleLogout = async () => {
-    qc.clear();
-    await db.auth.logout('/auth');
-  };
 
   return (
     <div className="min-h-screen flex">
@@ -80,13 +75,6 @@ export default function Layout() {
               <div className="text-sm font-medium text-sidebar-foreground truncate">{profile?.full_name || 'Patient'}</div>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-destructive transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            Sign out
-          </button>
         </div>
       </aside>
 

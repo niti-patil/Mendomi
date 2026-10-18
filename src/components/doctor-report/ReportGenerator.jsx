@@ -1,4 +1,5 @@
-const db = globalThis.__B44_DB__ || { auth:{ isAuthenticated: async()=>false, me: async()=>null }, entities:new Proxy({}, { get:()=>({ filter:async()=>[], get:async()=>null, create:async()=>({}), update:async()=>({}), delete:async()=>({}) }) }), integrations:{ Core:{ UploadFile:async()=>({ file_url:'' }) } } };
+import { getDemoClient } from "@/lib/demoClient";
+const db = getDemoClient();
 
 import { useState } from 'react';
 
@@ -35,6 +36,7 @@ export default function ReportGenerator({ onGenerated, onClose }) {
     setError('');
     try {
       const res = await db.functions.invoke('generateDoctorReport', { includedSections: sections });
+      if (res.data?.error) throw new Error(res.data.error);
       onGenerated(res.data);
     } catch (e) {
       setError(e.message || 'Failed to generate report');

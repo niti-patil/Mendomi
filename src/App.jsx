@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider } from '@/lib/AuthContext';
 import ScrollToTop from './components/ScrollToTop';
@@ -31,9 +31,6 @@ import MendyTone from '@/pages/settings/MendyTone';
 import CaregiverAccess from '@/pages/settings/CaregiverAccess';
 import OtherSettings from '@/pages/settings/OtherSettings';
 import SavedQuestions from '@/pages/settings/SavedQuestions';
-import Auth from '@/pages/Auth';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
 // Add page imports here
 
 function App() {
@@ -44,12 +41,7 @@ function App() {
           <ScrollToTop />
           <Routes>
             <Route path="/shared/report/:token" element={<SharedDoctorReport />} />
-            <Route path="/auth" element={<Auth defaultMode="login" />} />
-            <Route path="/login" element={<Auth defaultMode="login" />} />
-            <Route path="/register" element={<Auth defaultMode="signup" />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/auth" replace />} />}>
+            <Route element={<ProtectedRoute />}>
               <Route element={<Layout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/upload" element={<Upload />} />

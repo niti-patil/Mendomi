@@ -1,7 +1,8 @@
-const db = globalThis.__B44_DB__ || { auth:{ isAuthenticated: async()=>false, me: async()=>null }, entities:new Proxy({}, { get:()=>({ filter:async()=>[], get:async()=>null, create:async()=>({}), update:async()=>({}), delete:async()=>({}) }) }), integrations:{ Core:{ UploadFile:async()=>({ file_url:'' }) } } };
+import { getDemoClient } from "@/lib/demoClient";
+const db = getDemoClient();
 
 import { useState } from "react";
-import { Globe, LogOut, Bell, Trash2, Loader2 } from "lucide-react";
+import { Globe, Bell, Trash2, Loader2 } from "lucide-react";
 
 import { usePatientProfile } from "@/hooks/usePatientProfile";
 import SettingsShell, { SectionCard, Spinner } from "@/components/settings/SettingsShell";
@@ -20,8 +21,6 @@ export default function OtherSettings() {
   const [deleteError, setDeleteError] = useState("");
   const [deleted, setDeleted] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-
-  const signOut = async () => { await db.auth.logout(); };
 
   const deleteAccount = async () => {
     setDeleting(true); setDeleteError("");
@@ -60,10 +59,7 @@ export default function OtherSettings() {
           <p className="text-sm font-medium text-success">Your account has been scheduled for deletion. You can close this page.</p>
         ) : (
           <>
-            <button onClick={signOut} className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted">
-              <LogOut className="h-4 w-4" /> Sign out
-            </button>
-            <div className="mt-4 border-t border-border pt-4">
+            <div className="border-t border-border pt-4">
               <p className="mb-1 text-sm font-semibold text-foreground">Delete account</p>
               <p className="mb-3 text-xs text-muted-foreground">Permanently erase your profile, recovery plan, check-ins, and uploaded documents. This cannot be undone.</p>
               <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
