@@ -1,31 +1,59 @@
-// In-memory mock SDK client for demo mode.
-// Returns demo data, supports in-memory CRUD so toggles/edits feel real.
 
 import {
   DEMO_USER, DEMO_PROFILE, DEMO_DISCHARGE, DEMO_MEDICATIONS, DEMO_TASKS,
   DEMO_APPOINTMENTS, DEMO_CHECKINS, DEMO_CONVERSATIONS, DEMO_QUESTIONS,
   DEMO_REPORTS, DEMO_ALLERGIES_MEDS, DEMO_VACCINES, DEMO_MEDICAL_RECORDS,
+  DEMO_RECOVERY_PLAN,
 } from "./demoData";
 
-// Deep clone so the static source is never mutated across demo sessions.
+
 const clone = (v) => JSON.parse(JSON.stringify(v));
 
+
+const sample = (arr) => clone(arr).map((r) => ({ ...r, is_sample: true }));
+
 const store = {
-  PatientProfile: clone([DEMO_PROFILE]),
-  DischargeDocument: clone([DEMO_DISCHARGE]),
-  Medication: clone(DEMO_MEDICATIONS),
-  DailyTask: clone(DEMO_TASKS),
-  Appointment: clone(DEMO_APPOINTMENTS),
-  SymptomCheckin: clone(DEMO_CHECKINS),
-  Conversation: clone(DEMO_CONVERSATIONS),
-  DoctorReport: clone(DEMO_REPORTS),
-  QueuedQuestion: clone(DEMO_QUESTIONS),
-  AllergyMedication: clone(DEMO_ALLERGIES_MEDS),
-  VaccineRecord: clone(DEMO_VACCINES),
-  MedicalRecord: clone(DEMO_MEDICAL_RECORDS),
-  Task: clone(DEMO_TASKS),
+  PatientProfile: sample([DEMO_PROFILE]),
+  DischargeDocument: sample([DEMO_DISCHARGE]),
+  Medication: sample(DEMO_MEDICATIONS),
+  DailyTask: sample(DEMO_TASKS),
+  Appointment: sample(DEMO_APPOINTMENTS),
+  SymptomCheckin: sample(DEMO_CHECKINS),
+  Conversation: sample(DEMO_CONVERSATIONS),
+  DoctorReport: sample(DEMO_REPORTS),
+  QueuedQuestion: sample(DEMO_QUESTIONS),
+  AllergyMedication: sample(DEMO_ALLERGIES_MEDS),
+  VaccineRecord: sample(DEMO_VACCINES),
+  MedicalRecord: sample(DEMO_MEDICAL_RECORDS),
   EmailLog: [],
 };
+
+store.Task = store.DailyTask;
+
+function clearSampleData() {
+  for (const [name, coll] of Object.entries(store)) {
+    if (name === "PatientProfile") continue;
+    for (let i = coll.length - 1; i >= 0; i--) {
+      if (coll[i].is_sample) coll.splice(i, 1);
+    }
+  }
+  const p = store.PatientProfile[0];
+  if (p) {
+    Object.assign(p, {
+      diagnosis: "",
+      surgery_type: "",
+      surgery_date: "",
+      surgeon: "",
+      hospital: "",
+      hospital_name: "",
+      primary_doctor: "",
+      procedure_name: "",
+      procedure_date: "",
+      restrictions_summary: "",
+    
+    });
+  }
+}
 
 let idCounter = 1000;
 const newId = () => `demo-${Date.now()}-${idCounter++}`;
@@ -134,6 +162,20 @@ const demoEntities = {};
 for (const name of Object.keys(store)) {
   demoEntities[name] = makeEntity(name);
 }
+
+
+const baseDocDelete = demoEntities.DischargeDocument.delete;
+demoEntities.DischargeDocument.delete = async (id) => {
+  const doc = store.DischargeDocument.find((d) => d.id === id);
+  const res = await baseDocDelete(id);
+  if (doc && doc.is_sample) clearSampleData();
+  for (const coll of Object.values(store)) {
+    for (let i = coll.length - 1; i >= 0; i--) {
+      if (coll[i].source_doc_id === id) coll.splice(i, 1);
+    }
+  }
+  return res;
+};
 
 const demoAuth = {
   me: async () => ({ ...DEMO_USER }),
@@ -255,6 +297,23 @@ If a field is not present in the document, infer sensible recovery defaults but 
 
 Also return field_confidence: for each of diagnosis, procedure, medications, restrictions, appointment, give a score 0-1 reflecting how clearly it was stated in the source (1 = explicitly stated, 0.6 = partially inferred, 0.3 = guessed/defaulted, 0 = not found).`;
 
+// Exact JSON shapes the AI must return (so the app can read the results).
+const EXTRACTION_SCHEMA = `Return ONLY a JSON object with exactly these keys:
+{"diagnosis":"","surgery_type":"","surgery_date":"YYYY-MM-DD or empty","surgeon":"","hospital":"",
+"restrictions":[],"activity_guidelines":[],"care_instructions":[],"warning_signs":[],
+"medications":[{"name":"","dosage":"","frequency":"","instructions":"","purpose":"","schedule_times":["HH:MM"]}],
+"follow_up_appointments":[{"title":"","date":"YYYY-MM-DD","time":"HH:MM","provider":"","location":"","reason":""}],
+"field_confidence":{"diagnosis":"high|low|missing","medications":"high|low|missing","restrictions":"high|low|missing","follow_up_date":"high|low|missing"}}`;
+
+const PLAN_SCHEMA = `Return ONLY a JSON object with exactly these keys:
+{"diagnosis":"","procedure":"","recovery_duration_days":42,"summary":"","restrictions":[],"follow_up_info":"",
+"medications":[{"name":"","dosage":"","frequency":"","instructions":"","purpose":"","reminders":["HH:MM"]}],
+"daily_tasks":[{"title":"","category":"medication|activity|self_care|check_in","scheduled_time":"HH:MM or empty","recurring":true}],
+"appointment":{"title":"","provider":"","location":"","date":"YYYY-MM-DD","time":"HH:MM","notes":""} or null,
+"field_confidence":{"diagnosis":0,"procedure":0,"medications":0,"restrictions":0,"appointment":0}}`;
+
+const arr = (v) => (Array.isArray(v) ? v : []);
+
 function buildExtractionPrompt() {
   return `You are a clinical discharge-summary extraction assistant. Analyze the attached hospital discharge document (photo or PDF) and extract a structured recovery summary for a post-surgery patient.
 
@@ -294,33 +353,39 @@ field_confidence: { diagnosis: "high", medications: "high", restrictions: "high"
 Apply this same extraction pattern whether the source uses paragraphs, forms, or tables.`;
 }
 
-function buildTasksFromExtraction(extracted, dateStr, startOrder = 0) {
-  const tasks = [];
-  let order = startOrder;
-  const pushTask = (task) => {
-    tasks.push({ ...task, date: task.date || dateStr, sort_order: order++, completed: false, recurring: true });
-  };
+
+function buildTasksFromExtraction(extracted, days = 14) {
+  const specs = [];
   (extracted.medications || []).forEach((med) => {
     const times = med.schedule_times && med.schedule_times.length ? med.schedule_times : ["09:00", "21:00"];
     times.forEach((t) => {
-      pushTask({
+      specs.push({
         title: `Take ${med.name} ${med.dosage || ""}`.trim(),
-        type: "medication",
+        category: "medication",
         scheduled_time: t,
         notes: med.instructions || med.frequency || "",
       });
     });
   });
   (extracted.activity_guidelines || []).forEach((g) => {
-    pushTask({ title: g, type: "activity", scheduled_time: "10:00" });
+    specs.push({ title: g, category: "activity", scheduled_time: "10:00" });
   });
   (extracted.care_instructions || []).forEach((c) => {
-    pushTask({ title: c, type: "care", scheduled_time: "12:00" });
+    specs.push({ title: c, category: "self_care", scheduled_time: "12:00" });
   });
-  if (tasks.length === 0) {
-    pushTask({ title: "Drink 8 glasses of water", type: "activity", scheduled_time: "check through day" });
+  specs.push({ title: "Drink 8 glasses of water", category: "activity", scheduled_time: "" });
+  specs.push({ title: "Daily pain & symptom check-in", category: "check_in", scheduled_time: "20:00" });
+
+  const tasks = [];
+  let order = 0;
+  for (let d = 0; d < days; d++) {
+    const dt = new Date();
+    dt.setDate(dt.getDate() + d);
+    const task_date = dt.toISOString().slice(0, 10);
+    specs.forEach((s) => {
+      tasks.push({ ...s, task_date, order: order++, completed: false, recurring: true });
+    });
   }
-  pushTask({ title: "Daily pain & symptom check-in", type: "checkin", scheduled_time: "20:00" });
   return tasks;
 }
 
@@ -457,50 +522,10 @@ async function askAssistant(payload) {
   if (!question || typeof question !== "string" || question.length > 1000) {
     return { data: { error: "A question (max 1000 chars) is required" } };
   }
-  const docs = await demoEntities.DischargeDocument.filter({ status: "extracted" });
-  const profile = (await demoEntities.PatientProfile.filter({}))[0] || {};
-  const medications = await demoEntities.Medication.list("-created_date", 50);
-  const appointments = await demoEntities.Appointment.list("date", 20);
-  const context = {
-    profile: {
-      surgery_type: profile.surgery_type, surgery_date: profile.surgery_date,
-      diagnosis: profile.diagnosis, surgeon: profile.surgeon, hospital: profile.hospital,
-      restrictions: profile.restrictions_summary,
-    },
-    discharge_summaries: docs.map((d) => ({
-      diagnosis: d.diagnosis, restrictions: d.restrictions, activity_guidelines: d.activity_guidelines,
-      care_instructions: d.care_instructions, warning_signs: d.warning_signs,
-    })),
-    medications: medications.map((m) => ({ name: m.name, dosage: m.dosage, frequency: m.frequency, instructions: m.instructions })),
-    appointments: appointments.map((a) => ({ title: a.title, date: a.date, time: a.time, provider: a.provider })),
-  };
-  const urgent = isUrgent(question);
-  const style = profile.mendy_response_style || "encouraging";
-  const toneGuide = style === "direct"
-    ? "Be direct and concise: short, to the point, minimal filler."
-    : style === "gentle"
-      ? "Be gentle and detailed: softer tone, a little more explanation."
-      : "Be encouraging: warm, supportive, cheerleading.";
-  const hasDischarge = docs.length > 0;
-  const noPapersRule = !hasDischarge
-    ? "NO_DISCHARGE_PAPERS: The patient has NOT uploaded discharge papers. You MAY answer GENERAL recovery questions (rest, hydration, gentle movement, general wound-care basics, what to ask a doctor). If the question is SPECIFIC to their own recovery (their medications, dosing, activity limits, their surgery, their wound, procedure-specific symptoms or restrictions), DO NOT answer it — reply exactly: \"I can't answer that without your discharge papers — please upload them for accurate advice about your specific recovery.\" Then end with the general-guidance closing line below. "
-    : "";
-  const prompt = `You are "Mendy", a friendly AI recovery companion for a post-surgery patient at home. Answer everyday recovery questions using the patient's OWN discharge instructions and recovery data below as the primary source, supplemented by general patient-education knowledge. Be clear and concise (2-4 sentences). ${toneGuide} This tone setting changes ONLY how you phrase things — never what medical information you include. ${noPapersRule}
-
-If the question is not covered by their discharge data, say you don't have that in their discharge instructions and suggest they ask their care team. Never invent specific medical advice or dosing.
-
-IMPORTANT — URGENCY: If the question mentions urgent symptoms (chest pain, trouble breathing, severe bleeding, high fever, signs of infection, fainting, sudden numbness, uncontrollable pain, leg swelling), prioritize safety — tell them to contact their care team or seek urgent care immediately.
-
-Every response MUST end with a short final line distinguishing general guidance from care-team situations, e.g. "This is general guidance — for anything concerning, contact your care team." If the situation is urgent, that line should say to seek urgent care.
-
-Patient recovery context (JSON):
-${JSON.stringify(context)}
-
-Patient question: ${question}`;
-  const answer = await groqChat({ messages: [{ role: "user", content: prompt }] });
-  await demoEntities.Conversation.create({ role: "user", content: question, urgent_flag: urgent, context_type: "assistant" });
-  await demoEntities.Conversation.create({ role: "assistant", content: answer, urgent_flag: urgent, context_type: "assistant" });
-  return { data: { answer, urgent_flag: urgent, urgent_reason: urgent ? URGENT_REASON : null } };
+  const data = demoAskResponse(question);
+  await demoEntities.Conversation.create({ role: "user", content: question, urgent_flag: data.urgent_flag, context_type: "assistant" });
+  await demoEntities.Conversation.create({ role: "assistant", content: data.answer, urgent_flag: data.urgent_flag, context_type: "assistant" });
+  return { data };
 }
 
 async function wellnessCoach(payload) {
@@ -652,12 +677,12 @@ async function generateRecoveryPlan(payload) {
     ? payload.file_urls.filter(Boolean)
     : (payload?.file_url ? [payload.file_url] : []);
   if (!fileUrls.length) return { data: { error: "file_url is required" } };
-  const prompt = `${RECOVERY_PLAN_PROMPT}
+  
+  if (!fileUrls.some((u) => fileStore.has(u))) return { data: clone(DEMO_RECOVERY_PLAN) };
 
-Return a single JSON object with those fields.`;
-  const chat = await messagesForDocuments(prompt, fileUrls);
-  const result = await groqChat({ ...chat, json: true });
-  return { data: result };
+  const { model, messages } = await messagesForDocuments(`${RECOVERY_PLAN_PROMPT}\n\n${PLAN_SCHEMA}`, fileUrls);
+  const plan = await groqChat({ model, messages, json: true });
+  return { data: plan };
 }
 
 async function extractDischargeDocument(payload) {
@@ -667,12 +692,60 @@ async function extractDischargeDocument(payload) {
     return { data: { error: "file_url is required" } };
   }
   const doc = await demoEntities.DischargeDocument.create({ file_url, file_name, status: "pending" });
-  const prompt = `${buildExtractionPrompt()}
 
-Return a single JSON object with diagnosis, surgery_type, surgery_date, surgeon, hospital, restrictions, activity_guidelines, medications (name, dosage, frequency, instructions, purpose, schedule_times), follow_up_appointments (title, date, time, provider, location, reason), care_instructions, warning_signs, and field_confidence.`;
-  const chat = await messagesForDocuments(prompt, [file_url]);
-  const llm = await groqChat({ ...chat, json: true });
-  const extracted = llm && llm.medications !== undefined ? llm : (llm && llm.output) || llm || {};
+  const isRealUpload = fileStore.has(file_url);
+  let extracted;
+  if (isRealUpload) {
+    try {
+      const { model, messages } = await messagesForDocuments(`${buildExtractionPrompt()}\n\n${EXTRACTION_SCHEMA}`, [file_url]);
+      const raw = await groqChat({ model, messages, json: true });
+      extracted = {
+        ...raw,
+        restrictions: arr(raw.restrictions),
+        activity_guidelines: arr(raw.activity_guidelines),
+        care_instructions: arr(raw.care_instructions),
+        warning_signs: arr(raw.warning_signs),
+        medications: arr(raw.medications),
+        follow_up_appointments: arr(raw.follow_up_appointments),
+      };
+    } catch (e) {
+  
+      await demoEntities.DischargeDocument.delete(doc.id);
+      throw e;
+    }
+
+    clearSampleData();
+  } else {
+    extracted = {
+      diagnosis: DEMO_DISCHARGE.diagnosis,
+      surgery_type: DEMO_DISCHARGE.surgery_type,
+      surgery_date: DEMO_DISCHARGE.surgery_date,
+      surgeon: DEMO_DISCHARGE.surgeon,
+      hospital: DEMO_DISCHARGE.hospital,
+      restrictions: clone(DEMO_DISCHARGE.restrictions),
+      activity_guidelines: clone(DEMO_DISCHARGE.activity_guidelines),
+      care_instructions: clone(DEMO_DISCHARGE.care_instructions),
+      warning_signs: clone(DEMO_DISCHARGE.warning_signs),
+      medications: DEMO_MEDICATIONS.map((m) => ({
+        name: m.name,
+        dosage: m.dosage,
+        frequency: m.frequency,
+        instructions: m.instructions,
+        purpose: m.purpose,
+        schedule_times: clone(m.schedule_times),
+      })),
+      follow_up_appointments: DEMO_APPOINTMENTS.map((a) => ({
+        title: a.title,
+        date: a.date,
+        time: a.time,
+        provider: a.provider,
+        location: a.location,
+        reason: a.reason,
+      })),
+      field_confidence: { diagnosis: "high", medications: "high", restrictions: "high", follow_up_date: "high" },
+    };
+  }
+
   await demoEntities.DischargeDocument.update(doc.id, {
     status: "extracted",
     extracted_json: extracted,
@@ -709,6 +782,7 @@ Return a single JSON object with diagnosis, surgery_type, surgery_date, surgeon,
       purpose: med.purpose || "",
       start_date: extracted.surgery_date || new Date().toISOString().slice(0, 10),
       active: true,
+      source_doc_id: doc.id,
     });
     createdMeds.push(m);
   }
@@ -722,16 +796,14 @@ Return a single JSON object with diagnosis, surgery_type, surgery_date, surgeon,
       location: appt.location || "",
       reason: appt.reason || "",
       completed: false,
+      source_doc_id: doc.id,
     });
   }
-  const dateStr = new Date().toISOString().slice(0, 10);
-  const taskSpecs = buildTasksFromExtraction(extracted, dateStr, 0);
+  const taskSpecs = buildTasksFromExtraction(extracted);
   const tasksWithMedId = taskSpecs.map((t) => {
-    if (t.type === "medication" && createdMeds.length) {
-      const match = createdMeds.find((m) => t.title.toLowerCase().includes(String(m.name || "").toLowerCase()));
-      if (match) t.medication_id = match.id;
-    }
-    return t;
+    const match = t.category === "medication" &&
+      createdMeds.find((m) => t.title.toLowerCase().includes(String(m.name || "").toLowerCase()));
+    return { ...t, ...(match ? { medication_id: match.id } : {}), source_doc_id: doc.id };
   });
   if (tasksWithMedId.length) await demoEntities.Task.bulkCreate(tasksWithMedId);
   return { data: { document_id: doc.id, extracted } };

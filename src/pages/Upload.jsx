@@ -96,8 +96,15 @@ export default function Upload() {
     try {
       setStep(STEPS.SAVED);
       const today = todayStr();
+
+      // Remove the built-in example paper (and all its sample data) before saving the real one.
+      const existingDocs = await db.entities.DischargeDocument.list();
+      for (const d of existingDocs) {
+        if (d.is_sample) await db.entities.DischargeDocument.delete(d.id);
+      }
+
       const sourceUrls = readyFiles.map((f) => f.url).join(", ");
-      await db.entities.DischargeDocument.create({
+      const doc = await db.entities.DischargeDocument.create({
         file_url: sourceUrls,
         file_name: readyFiles.map((f) => f.name).join(", ") || "Discharge document",
         status: "extracted",
@@ -114,7 +121,8 @@ export default function Upload() {
           instructions: m.instructions || "",
           purpose: m.purpose || "",
           schedule_times: m.reminders || [],
-          active: true
+          active: true,
+          source_doc_id: doc.id
         }))
       ) : [];
       const taskList = extracted.daily_tasks || [];
@@ -140,7 +148,8 @@ export default function Upload() {
             completed: false,
             order: i,
             medication_id: medId,
-            recurring: t.recurring !== false
+            recurring: t.recurring !== false,
+            source_doc_id: doc.id
           });
         }
       });
@@ -152,9 +161,22 @@ export default function Upload() {
           location: extracted.appointment.location || "",
           date: extracted.appointment.date || today,
           time: extracted.appointment.time || "",
-          notes: extracted.appointment.notes || ""
+          notes: extracted.appointment.notes || "",
+          source_doc_id: doc.id
         });
       }
+
+      // Keep the profile in sync with the new paper.
+      const profiles = await db.entities.PatientProfile.filter({});
+      if (profiles[0]) {
+        await db.entities.PatientProfile.update(profiles[0].id, {
+          diagnosis: extracted.diagnosis || "",
+          surgery_type: extracted.procedure || "",
+          procedure_name: extracted.procedure || "",
+          restrictions_summary: (extracted.restrictions || []).join("; ")
+        });
+      }
+
       navTimer.current = setTimeout(() => navigate("/plan?tab=plan"), 1100);
     } catch (e) {
       setError(e.message || "Could not save your plan.");
