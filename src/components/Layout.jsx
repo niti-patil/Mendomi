@@ -35,16 +35,14 @@ export default function Layout() {
       {/* Desktop sidebar */}
       <aside className={`hidden ${collapsed ? 'md:hidden' : 'md:flex md:w-64'} flex-col bg-sidebar border-r border-sidebar-border transition-all print:hidden`}>
         <div className="px-4 py-5 flex items-center justify-between gap-2">
-          <Link to="/" className="flex items-center gap-2 min-w-0">
+          <Link to="/" className="flex items-center gap-2 shrink-0">
             <Logo className="w-9 h-9 rounded-xl shrink-0" />
-            <div className="min-w-0">
-              <div className="font-display font-semibold text-sidebar-foreground leading-tight truncate">Mendomi</div>
-            </div>
+            <span className="font-display font-semibold text-sidebar-foreground whitespace-nowrap">Mendomi</span>
           </Link>
-          <div className="flex items-center gap-0.5 shrink-0">
-            <button onClick={() => navigate('/upload')} className="p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/70" aria-label="Upload papers"><Plus className="w-4 h-4" /></button>
-            <SettingsDropdown />
-            <button onClick={() => setCollapsed(true)} className="p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/70" aria-label="Collapse sidebar"><PanelLeftClose className="w-5 h-5" /></button>
+          <div className="flex items-center shrink-0">
+            <button onClick={() => navigate('/upload')} className="p-1.5 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/70" aria-label="Upload papers"><Plus className="w-4 h-4" /></button>
+            <SettingsDropdown triggerClassName="p-1.5 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/70" />
+            <button onClick={() => setCollapsed(true)} className="p-1.5 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/70" aria-label="Collapse sidebar"><PanelLeftClose className="w-5 h-5" /></button>
           </div>
         </div>
         <nav className="flex-1 px-3 space-y-1">
