@@ -16,14 +16,14 @@ const isoOffset = (n) => {
 export const DEMO_USER = {
   id: "demo-ninja",
   email: "ninja.demo@mendly.app",
-  full_name: "Ninja Patil",
+  full_name: "Demo User",
   role: "user",
   created_date: isoOffset(-7),
 };
 
 export const DEMO_PROFILE = {
   id: "demo-profile-1",
-  full_name: "Ninja Patil",
+  full_name: "Demo User",
   date_of_birth: "2010-07-01",
   phone: "(555) 123-4567",
   emergency_contact_name: "Maya Patil",
