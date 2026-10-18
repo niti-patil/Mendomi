@@ -132,7 +132,7 @@ export default function Auth({ defaultMode = "signup" }) {
         <div className="flex justify-center mb-4">
           <Logo className="w-14 h-14" color="#ffffff" />
         </div>
-        <h1 className="text-3xl font-bold tracking-tight text-white">Mendly</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-white">Mendomi</h1>
         <p className="text-white/80 mt-2">Everything you need to heal, in one place.</p>
       </header>
       <div className="flex-1 flex items-start justify-center px-4 py-8">

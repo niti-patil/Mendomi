@@ -38,7 +38,7 @@ export default function Layout() {
           <Link to="/" className="flex items-center gap-2 min-w-0">
             <Logo className="w-9 h-9 rounded-xl shrink-0" />
             <div className="min-w-0">
-              <div className="font-display font-semibold text-sidebar-foreground leading-tight truncate">Mendly</div>
+              <div className="font-display font-semibold text-sidebar-foreground leading-tight truncate">Mendomi</div>
             </div>
           </Link>
           <div className="flex items-center gap-0.5 shrink-0">
@@ -85,7 +85,7 @@ export default function Layout() {
           <div className="flex items-stretch">
             <Link to="/" className="flex items-center gap-2 pl-4 pr-3 shrink-0" style={{ paddingTop: 'env(safe-area-inset-top)', height: 'calc(3rem + env(safe-area-inset-top))' }}>
               <Logo className="w-6 h-6 rounded-md shrink-0" />
-              <span className="font-display text-base font-semibold leading-none">Mendly</span>
+              <span className="font-display text-base font-semibold leading-none">Mendomi</span>
             </Link>
             <div className="flex-1" />
             <button onClick={() => navigate('/upload')} className="flex items-center justify-center w-10 hover:bg-muted text-foreground/80" style={{ paddingTop: 'env(safe-area-inset-top)', height: 'calc(3rem + env(safe-area-inset-top))' }} aria-label="Upload papers"><Plus className="w-4 h-4" /></button>
@@ -99,7 +99,7 @@ export default function Layout() {
             <button onClick={() => setCollapsed(false)} className="p-2 rounded-lg hover:bg-muted text-foreground" aria-label="Expand sidebar">
               <PanelLeftOpen className="w-5 h-5" />
             </button>
-            <span className="font-display font-semibold text-sm">Mendly</span>
+            <span className="font-display font-semibold text-sm">Mendomi</span>
           </div>
         )}
 

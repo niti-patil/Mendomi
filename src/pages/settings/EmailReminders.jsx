@@ -25,7 +25,7 @@ export default function EmailReminders() {
       const res = await db.functions.invoke("sendNotificationEmail", {
         to: profile?.notification_email || "",
         subject: "Recovery Companion — test email",
-        body: `Hi ${profile?.full_name || "there"},\n\nThis is a test email from your Recovery Companion app. If you received this, email reminders are working.\n\nTake care,\nMendly`,
+        body: `Hi ${profile?.full_name || "there"},\n\nThis is a test email from your Recovery Companion app. If you received this, email reminders are working.\n\nTake care,\nMendomi`,
         type: "appointment_reminder"
       });
       setTestResult(res.data);

@@ -1,6 +1,6 @@
 export default function Logo({ className = "w-9 h-9", color = "#28536B" }) {
   return (
-    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={`shrink-0 ${className}`} aria-label="Mendly">
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={`shrink-0 ${className}`} aria-label="Mendomi">
       <rect x="11" y="6" width="30" height="50" rx="8" stroke={color} strokeWidth="3.5" />
       <path d="M26 17V31M19 24H33" stroke={color} strokeWidth="3.5" strokeLinecap="round" />
       <path d="M12 41H22L25 35L29 47L32 40H40" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />

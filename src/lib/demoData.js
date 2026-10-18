@@ -15,7 +15,7 @@ const isoOffset = (n) => {
 
 export const DEMO_USER = {
   id: "demo-ninja",
-  email: "ninja.demo@mendly.app",
+  email: "ninja.demo@mendomi.app",
   full_name: "Demo User",
   role: "user",
   created_date: isoOffset(-7),
@@ -42,7 +42,7 @@ export const DEMO_PROFILE = {
   insurance_provider: "Blue Cross Blue Shield",
   insurance_member_id: "BCB123456789",
   time_zone: "America/Los_Angeles",
-  notification_email: "ninja.demo@mendly.app",
+  notification_email: "ninja.demo@mendomi.app",
   email_opt_in: true,
   medication_reminders: true,
   daily_checkin_reminders: true,

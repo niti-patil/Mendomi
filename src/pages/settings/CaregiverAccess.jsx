@@ -18,8 +18,8 @@ export default function CaregiverAccess() {
     try {
       const res = await db.functions.invoke("sendNotificationEmail", {
         to: profile?.caregiver_email || "",
-        subject: "Mendly — caregiver test alert",
-        body: `Hi,\n\nThis is a test caregiver alert from ${profile?.full_name || "your contact"}'s Mendly app. If you received this, caregiver alerts are working.\n\nTake care,\nMendly`,
+        subject: "Mendomi — caregiver test alert",
+        body: `Hi,\n\nThis is a test caregiver alert from ${profile?.full_name || "your contact"}'s Mendomi app. If you received this, caregiver alerts are working.\n\nTake care,\nMendomi`,
         type: "caregiver_alert"
       });
       setTestResult(res.data);
