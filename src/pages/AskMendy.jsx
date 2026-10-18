@@ -58,10 +58,9 @@ export default function AskMendy() {
       if (data?.error) throw new Error(data.error);
       setMessages([...next, { role: "mendy", content: data.answer, urgent: data.urgent_flag, urgentReason: data.urgent_reason }]);
     } catch (e) {
-      const missingKey = e?.message?.includes("GROQ_API_KEY");
       setMessages([...next, {
         role: "mendy",
-        content: missingKey ? e.message : "I had trouble answering that. Please try again in a moment.",
+        content: e?.message || "I had trouble answering that. Please try again in a moment.",
         error: true,
       }]);
     } finally {

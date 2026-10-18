@@ -232,8 +232,8 @@ function demoAskResponse(question) {
 }
 
 const MISSING_KEY_MESSAGE = "Paste GROQ_API_KEY into .env and restart the dev server.";
-const TEXT_MODEL = "llama-3.3-70b-versatile";
-const VISION_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct";
+const TEXT_MODEL = "openai/gpt-oss-120b";
+const VISION_MODEL = "qwen/qwen3.8-27b";
 const URGENT_REASON = "This may need urgent attention — contact your doctor or seek emergency care right away.";
 const PDF_PHOTO_ERROR = "This PDF has no readable text. Use a photo of the page.";
 const fileStore = new Map();
@@ -412,7 +412,8 @@ async function groqChatOnce({ messages, json = false, model = TEXT_MODEL }) {
   let body = {};
   try { body = await res.json(); } catch { body = {}; }
   if (!res.ok) {
-    const message = body?.error?.message || "Groq request failed";
+    const fromBody = typeof body?.error === "string" ? body.error : (body?.error?.message || body?.message);
+    const message = fromBody || "Groq request failed";
     throw new Error(res.status === 503 || message.includes("GROQ_API_KEY") ? MISSING_KEY_MESSAGE : message);
   }
   const content = body?.choices?.[0]?.message?.content ?? "";
